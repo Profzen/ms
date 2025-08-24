@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>À propos • MedicalShop</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="MedicalShop — Fournitures médicales : mission, valeurs et ce que nous proposons aux établissements de santé." />
+  <style>
+    :root{
+      --bg:#f4f9ff;
+      --nav:#072a4a;           /* plus foncé pour la nav */
+      --hero:#e9f6ff;          /* distinct du nav et du contenu */
+      --accent-blue:#1f6feb;
+      --accent-green:#1fb67a;
+      --accent-green-2:#22c55e;
+      --panel:#ffffff;
+      --muted:#6b7b8f;
+      --text:#032139;
+      --card-border: rgba(10,30,60,0.04);
+      --radius:12px;
+      --shadow: 0 16px 40px rgba(9,30,66,0.06);
+      --max-width:1200px;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:Inter,system-ui,Roboto,Arial; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+    a{ color:inherit; text-decoration:none }
+    .container{ max-width:var(--max-width); margin:0 auto; padding:20px; }
+
+    /* Header / Nav */
+    header{ background:var(--nav); color:white; padding:12px 0; position:sticky; top:0; z-index:80; box-shadow:0 6px 18px rgba(2,6,23,0.08) }
+    .header-inner{ max-width:var(--max-width); margin:0 auto; display:flex; gap:12px; align-items:center; padding:6px 18px; }
+    .mark{ width:44px; height:44px; border-radius:10px; display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-blue),var(--accent-green)); color:white; font-weight:900 }
+    nav.main{ margin-left:12px; display:flex; gap:12px; }
+    nav.main a{ color:rgba(255,255,255,0.95); padding:8px 10px; border-radius:8px; font-weight:600 }
+    nav.main a:hover{ background:rgba(255,255,255,0.04) }
+
+    /* Hero */
+    main.hero{ padding:36px 0; background:var(--hero); border-bottom:1px solid var(--card-border) }
+    .hero-inner{ max-width:var(--max-width); margin:0 auto; display:flex; gap:20px; align-items:center; padding:6px 18px; }
+    .hero-left{ flex:1 }
+    .kicker{ color:var(--accent-green); font-weight:800; margin-bottom:8px }
+    h1{ margin:0; font-size:28px }
+    p.lead{ margin-top:8px; color:var(--muted) }
+
+    /* Layout columns */
+    .grid{ display:grid; grid-template-columns: 1fr 380px; gap:20px; max-width:var(--max-width); margin:18px auto; padding:0 18px 40px; }
+    @media (max-width:980px){ .grid{ grid-template-columns:1fr } }
+    .panel{ background:var(--panel); border-radius:var(--radius); padding:18px; border:1px solid var(--card-border); box-shadow:var(--shadow) }
+
+    /* Feature cards */
+    .features{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+    @media (max-width:980px){ .features{ grid-template-columns:repeat(2,1fr) } }
+    @media (max-width:520px){ .features{ grid-template-columns:1fr } }
+    .fcard{ padding:14px; border-radius:10px; background:linear-gradient(180deg,white, #fbfeff); border:1px solid var(--card-border); display:flex; gap:12px; align-items:flex-start }
+    .ficon{ width:48px; height:48px; border-radius:10px; display:grid; place-items:center; font-weight:800; background:linear-gradient(135deg,var(--accent-blue),var(--accent-green)); color:white }
+
+    /* Team */
+    .team{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+    @media (max-width:980px){ .team{ grid-template-columns:repeat(2,1fr) } }
+    @media (max-width:520px){ .team{ grid-template-columns:1fr } }
+    .member{ background:#fff; border-radius:10px; padding:12px; text-align:center; border:1px solid var(--card-border) }
+    .avatar{ width:80px; height:80px; border-radius:12px; margin:0 auto 8px; display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-blue),var(--accent-green)); color:white; font-weight:800 }
+
+    /* Values / CTA */
+    .values{ display:flex; gap:12px; margin-top:12px; flex-wrap:wrap }
+    .value{ flex:1; min-width:200px; padding:12px; border-radius:10px; background:linear-gradient(180deg,#ffffff,#f6fffb); border:1px solid var(--card-border) }
+
+    .cta{ margin-top:18px; display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+    .btn{ background:linear-gradient(135deg,var(--accent-blue),#3ea1ff); color:white; border:0; padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer }
+    .btn.ghost{ background:transparent; border:1px solid var(--card-border); color:var(--text) }
+
+    footer{ margin-top:34px; padding:20px 18px; background:linear-gradient(180deg,#e7f4ff,#dfeefb); border-top:1px solid var(--card-border) }
+    .footer-inner{ max-width:var(--max-width); margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+
+    .small{ font-size:13px; color:var(--muted) }
+
+    /* modal */
+    .modal-backdrop{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,0.6); z-index:200 }
+    .modal{ width:100%; max-width:760px; margin:18px; background:white; padding:18px; border-radius:12px }
+    .modal .row{ display:flex; gap:12px; flex-wrap:wrap }
+
+    @media (max-width:760px){
+      .hero-inner{ flex-direction:column; gap:12px }
+      .header-inner{ padding:8px 12px }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="mark">M+</div>
+        <div style="line-height:1">
+          <div style="font-weight:800; color:white">MedicalShop</div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.9)">Fournitures médicales</div>
+        </div>
+      </div>
+
+      <nav class="main" aria-label="main navigation">
+        <a href="/">Accueil</a>
+        <a href="/products.html">Produits</a>
+        <a href="/about.html" style="background:rgba(255,255,255,0.06); border-radius:8px; padding:8px 10px">À propos</a>
+        <a href="/contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main class="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="kicker">Qui nous sommes</div>
+        <h1>MedicalShop — Approvisionnement médical pensé pour les établissements</h1>
+        <p class="lead">Nous simplifions l’achat et la livraison de fournitures médicales (gants, seringues, matériel consommable et mobilier) pour les cliniques, cabinets et ONG de la région.</p>
+        <div class="cta">
+          <button id="btnContact" class="btn">Nous contacter</button>
+          <button id="btnExplore" class="btn ghost">Voir nos produits</button>
+        </div>
+      </div>
+      <div style="width:180px; text-align:center">
+        <img src="med.jpeg" alt="MedicalShop" style="max-width:160px">
+      </div>
+    </div>
+  </main>
+
+  <!-- Main grid -->
+  <div class="grid">
+    <!-- LEFT: main content -->
+    <section>
+      <div class="panel">
+        <h2 style="margin:0 0 8px 0">Notre mission</h2>
+        <p class="small" style="margin:0 0 12px 0; color:var(--muted)">Rendre les fournitures médicales fiables, accessibles et rapides à commander pour les professionnels de santé.</p>
+        <p>
+          MedicalShop a été fondé pour résoudre les difficultés d’approvisionnement observées sur le terrain : ruptures, délais opaques, et manque de traçabilité.
+          Nous travaillons avec des fournisseurs locaux et internationaux pour garantir qualité, conformité et disponibilité.
+        </p>
+
+        <div class="features" aria-hidden>
+          <div class="fcard">
+            <div class="ficon">⚡</div>
+            <div>
+              <div style="font-weight:800">Livraison rapide</div>
+              <div class="small">Délais optimisés vers les hôpitaux et cliniques.</div>
+            </div>
+          </div>
+
+          <div class="fcard">
+            <div class="ficon">🔒</div>
+            <div>
+              <div style="font-weight:800">Qualité & conformité</div>
+              <div class="small">Produits sélectionnés et vérifiés.</div>
+            </div>
+          </div>
+
+          <div class="fcard">
+            <div class="ficon">📦</div>
+            <div>
+              <div style="font-weight:800">Stock & traçabilité</div>
+              <div class="small">Suivi des commandes et historiques complets.</div>
+            </div>
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--card-border); margin:16px 0">
+
+        <h3 style="margin:0 0 8px 0">Nos valeurs</h3>
+        <div class="values">
+          <div class="value">
+            <div style="font-weight:800">Transparence</div>
+            <div class="small">Prix clairs, disponibilité en temps réel, facturation traçable.</div>
+          </div>
+          <div class="value">
+            <div style="font-weight:800">Engagement qualité</div>
+            <div class="small">Fournisseurs auditables, conformité aux normes locales.</div>
+          </div>
+          <div class="value">
+            <div style="font-weight:800">Proximité</div>
+            <div class="small">Support dédié et livraison adaptée aux contraintes locales.</div>
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--card-border); margin:16px 0">
+
+        <h3 style="margin:0 0 8px 0">Ce que nous offrons</h3>
+        <ul style="margin:8px 0 0 18px; color:var(--muted)">
+          <li>Catalogue centralisé de produits médicaux</li>
+          <li>Commandes en ligne et suivi</li>
+          <li>Livraison B2B et gestion des stocks</li>
+          <li>Facturation et historique pour audits</li>
+        </ul>
+
+        <div style="margin-top:14px">
+          <button id="btnStart" class="btn">Commencer une commande</button>
+          <button id="btnLearn" class="btn ghost">En savoir plus</button>
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div class="panel" style="margin-top:16px">
+        <h3 style="margin:0 0 8px 0">L'équipe</h3>
+        <div class="small" style="color:var(--muted); margin-bottom:12px">Petite équipe dédiée au support et à la logistique.</div>
+        <div class="team">
+          <div class="member">
+            <div class="avatar">Zen</div>
+            <div style="font-weight:800">Alaz</div>
+            <div class="small">Dev</div>
+          </div>
+          <div class="member">
+            <div class="avatar">senku</div>
+            <div style="font-weight:800">Youni</div>
+            <div class="small">Responsable de gestion</div>
+          </div>
+          <div class="member">
+            <div class="avatar">SP</div>
+            <div style="font-weight:800">Support</div>
+            <div class="small">Support client</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: quick contact / stats -->
+    <aside>
+      <div class="panel">
+        <h3 style="margin:0 0 8px 0">Statistiques clés</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="small">Produits en catalogue</div>
+            <div style="font-weight:800">+1 200</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="small">Clients professionnels</div>
+            <div style="font-weight:800">~320</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="small">Commandes / mois</div>
+            <div style="font-weight:800">~480</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:12px">
+        <h3 style="margin:0 0 8px 0">Contact rapide</h3>
+        <div class="small" style="color:var(--muted)">Besoin d'un devis ou d'une démonstration ?</div>
+        <div style="margin-top:12px; display:flex; gap:8px; flex-direction:column">
+          <a href="/contact.html" class="btn">Demander un devis</a>
+          <a href="tel:+22890000001" class="btn ghost">Appeler le support</a>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:12px">
+        <h3 style="margin:0 0 8px 0">FAQ rapide</h3>
+        <details style="margin-bottom:8px"><summary style="font-weight:700">Délais de livraison</summary><div class="small" style="margin-top:8px">Les délais moyens varient selon la localité ; nous proposons des options express le cas échéant.</div></details>
+        <details style="margin-bottom:8px"><summary style="font-weight:700">Retour / remboursement</summary><div class="small" style="margin-top:8px">Retour selon politique fournisseur. Contacte le support pour cas particuliers.</div></details>
+        <details><summary style="font-weight:700">Support technique</summary><div class="small" style="margin-top:8px">Support par mail et téléphone pendant les heures ouvrables.</div></details>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <div class="footer-inner container">
+      <div style="font-weight:800">MedicalShop</div>
+      <div class="small">© <span id="year"></span> MedicalShop — Fournitures médicales</div>
+    </div>
+  </footer>
+
+  <!-- Generic modal for details / contact -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <h3 id="modalTitle">Contact rapide</h3>
+      <div id="modalBody" style="margin-top:8px">
+        <p class="small">Tu veux être contacté rapidement ? Indique ton email et téléphone, nous revenons vers toi sous 24h.</p>
+        <div class="row" style="margin-top:12px">
+          <input id="mName" type="text" placeholder="Nom complet" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--card-border)">
+          <input id="mPhone" type="text" placeholder="Téléphone" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--card-border)">
+        </div>
+        <div style="margin-top:10px; display:flex; gap:8px">
+          <button id="mSend" class="btn">Demander</button>
+          <button id="mCancel" class="btn ghost">Annuler</button>
+          <div id="mMsg" style="margin-left:auto" class="small"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      // Buttons
+      const btnContact = document.getElementById('btnContact');
+      const btnExplore = document.getElementById('btnExplore');
+      const btnStart = document.getElementById('btnStart');
+      const btnLearn = document.getElementById('btnLearn');
+
+      btnContact.addEventListener('click', ()=> window.location.href = '/contact.html');
+      btnExplore.addEventListener('click', ()=> window.location.href = '/products.html');
+      btnStart.addEventListener('click', ()=> window.location.href = '/products.html');
+      btnLearn.addEventListener('click', ()=> {
+        // scroll to features panel
+        const el = document.querySelector('.panel');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+
+      // modal
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const mCancel = document.getElementById('mCancel');
+      const mSend = document.getElementById('mSend');
+      const mMsg = document.getElementById('mMsg');
+
+      function showModal(show){
+        modalBackdrop.style.display = show ? 'grid' : 'none';
+        modalBackdrop.setAttribute('aria-hidden', show ? 'false' : 'true');
+      }
+
+      btnContact.addEventListener('click', ()=> showModal(true)); // also link opens separate contact page, but modal accessible here
+      mCancel.addEventListener('click', ()=> showModal(false));
+
+      mSend.addEventListener('click', async ()=>{
+        mMsg.textContent = '';
+        const name = document.getElementById('mName').value.trim();
+        const phone = document.getElementById('mPhone').value.trim();
+        if (!name || !phone) { mMsg.textContent = 'Nom + téléphone requis'; mMsg.style.color = '#a02b2b'; return; }
+        mMsg.style.color = '#0b6b3a'; mMsg.textContent = 'Requête reçue — nous revenons vers vous.';
+        // Here you could POST to an endpoint to create a support ticket / lead.
+        setTimeout(()=> { showModal(false); mMsg.textContent=''; }, 900);
+      });
+
+      // small accessibility: close modal on Escape
+      window.addEventListener('keydown', (e)=> {
+        if (e.key === 'Escape') showModal(false);
+      });
+    })();
+  </script>
+</body>
+</html>

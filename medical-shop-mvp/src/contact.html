@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Contact • MedicalShop</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#f4f9ff;
+      --nav:#0b355f;
+      --accent-blue:#1f6feb;
+      --accent-green:#1fb67a;
+      --accent-green-2:#22c55e;
+      --panel:#ffffff;
+      --muted:#6b7b8f;
+      --text:#032139;
+      --card-border: rgba(10,30,60,0.04);
+      --radius:12px;
+      --shadow: 0 16px 40px rgba(9,30,66,0.06);
+      --max-width:1200px;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:Inter,system-ui,Roboto,Arial; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+    a{ color:inherit; text-decoration:none }
+    .container{ max-width:var(--max-width); margin:0 auto; padding:20px; }
+
+    header{ background:var(--nav); color:white; padding:12px 0; position:sticky; top:0; z-index:80; box-shadow:0 6px 18px rgba(2,6,23,0.08) }
+    .header-inner{ max-width:var(--max-width); margin:0 auto; display:flex; gap:12px; align-items:center; padding:6px 18px; }
+    .mark{ width:44px; height:44px; border-radius:10px; display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-blue),var(--accent-green)); color:white; font-weight:900 }
+    nav.main{ margin-left:12px; display:flex; gap:12px; }
+    nav.main a{ color:rgba(255,255,255,0.95); padding:8px 10px; border-radius:8px; font-weight:600 }
+    nav.main a:hover{ background:rgba(255,255,255,0.04) }
+
+    main.hero{ padding:36px 0; background:linear-gradient(180deg,#eaf6ff,#f8fbff); border-bottom:1px solid var(--card-border) }
+    .hero-inner{ max-width:var(--max-width); margin:0 auto; display:flex; gap:20px; align-items:center; padding:6px 18px; }
+    .hero-left{ flex:1 }
+    .kicker{ color:var(--accent-green); font-weight:800; margin-bottom:8px }
+    h1{ margin:0; font-size:28px }
+    p.lead{ margin-top:8px; color:var(--muted) }
+
+    /* layout */
+    .grid{ display:grid; grid-template-columns: 1fr 380px; gap:20px; max-width:var(--max-width); margin:18px auto; padding:0 18px 40px; }
+    @media (max-width:980px){ .grid{ grid-template-columns:1fr 1fr } }
+    @media (max-width:760px){ .grid{ grid-template-columns:1fr; padding:0 16px } }
+
+    .panel{ background:var(--panel); border-radius:var(--radius); padding:18px; border:1px solid var(--card-border); box-shadow:var(--shadow) }
+
+    form .row{ display:flex; gap:12px; }
+    form .col{ flex:1; min-width:0 }
+    label{ font-size:13px; color:var(--muted); display:block; margin-bottom:6px; font-weight:600 }
+    input[type="text"], input[type="email"], textarea{ width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--card-border); background:transparent; color:var(--text); font-size:14px; }
+    textarea{ min-height:140px; resize:vertical }
+    .btn{ background:linear-gradient(135deg,var(--accent-blue),#3ea1ff); color:white; border:0; padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer }
+    .btn.ghost{ background:transparent; border:1px solid var(--card-border); color:var(--text) }
+
+    .side-contact{ display:flex; flex-direction:column; gap:12px }
+    .contact-item{ display:flex; gap:12px; align-items:center }
+    .contact-item .icon{ width:40px; height:40px; border-radius:8px; display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-blue),var(--accent-green)); color:white; font-weight:800 }
+    .socials{ display:flex; gap:8px; margin-top:8px }
+    .socials a{ width:44px; height:44px; display:grid; place-items:center; background:white; border-radius:8px; border:1px solid var(--card-border) }
+    .small{ font-size:13px; color:var(--muted) }
+
+    .msg{ margin-top:12px; padding:10px 12px; border-radius:8px; font-weight:700 }
+    .msg.ok{ background:linear-gradient(135deg,#e8fbf0,#f0fff7); color:#0b6b3a; border:1px solid rgba(20,120,70,0.06) }
+    .msg.err{ background:linear-gradient(135deg,#fff2f2,#fff7f7); color:#a02b2b; border:1px solid rgba(200,50,50,0.06) }
+
+    footer{ margin-top:34px; padding:20px 18px; background:linear-gradient(180deg,#e7f4ff,#dfeefb); border-top:1px solid var(--card-border) }
+    .footer-inner{ max-width:var(--max-width); margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+
+    /* accessibility / small screens */
+    @media (max-width:760px){
+      .hero-inner{ flex-direction:column; gap:12px }
+      .header-inner{ padding:8px 12px }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="mark">M+</div>
+        <div style="line-height:1">
+          <div style="font-weight:800; color:white">MedicalShop</div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.9)">Contact</div>
+        </div>
+      </div>
+
+      <nav class="main" aria-label="main navigation">
+        <a href="/">Accueil</a>
+        <a href="/products.html">Produits</a>
+        <a href="/about.html">À propos</a>
+        <a href="/contact.html" style="background:rgba(255,255,255,0.06); border-radius:8px; padding:8px 10px">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="kicker">Contact</div>
+        <h1>Entrer en contact avec MedicalShop</h1>
+        <p class="lead">Questions, partenariat ou support ? Écris-nous via le formulaire ou contacte-nous directement par téléphone / WhatsApp.</p>
+      </div>
+      <div style="width:140px; text-align:center">
+        <img src="med.jpeg" alt="MedicalShop" style="max-width:120px">
+      </div>
+    </div>
+  </main>
+
+  <div class="container">
+    <div class="grid">
+      <!-- LEFT: form -->
+      <section class="panel" aria-labelledby="contactTitle">
+        <h2 id="contactTitle" style="margin:0 0 8px 0">Envoyer un message</h2>
+        <p class="small" style="margin:0 0 14px 0">Nous répondons généralement sous 24 à 48 heures.</p>
+
+        <form id="contactForm" autocomplete="on" novalidate>
+          <div class="row" style="margin-bottom:12px">
+            <div class="col">
+              <label for="name">Nom complet</label>
+              <input id="name" name="name" type="text" placeholder="Ex : Dr. Kossi" required>
+            </div>
+            <div class="col">
+              <label for="email">Adresse e-mail</label>
+              <input id="email" name="email" type="email" placeholder="exemple@domaine.tg" required>
+            </div>
+          </div>
+
+          <div class="row" style="margin-bottom:12px">
+            <div class="col">
+              <label for="phone">Téléphone</label>
+              <input id="phone" name="phone" type="text" placeholder="+228 90 00 00 00">
+            </div>
+            <div class="col">
+              <label for="subject">Sujet</label>
+              <input id="subject" name="subject" type="text" placeholder="Objet du message" required>
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Décris ta demande..." required></textarea>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button id="btnSend" class="btn" type="submit">Envoyer</button>
+            <button id="btnReset" class="btn ghost" type="button">Réinitialiser</button>
+            <div id="formMsg" role="status" aria-live="polite" style="margin-left:auto"></div>
+          </div>
+        </form>
+
+        <div id="note" class="small" style="margin-top:12px;color:var(--muted)">
+          En production : branche l'endpoint `/api/send-email` (POST JSON) pour envoyer le message depuis le serveur. Sinon le formulaire propose un fallback `mailto:` pour ouvrir ton client mail local.
+        </div>
+      </section>
+
+      <!-- RIGHT: contact details -->
+      <aside class="panel side-contact" aria-label="Coordonnées">
+        <div>
+          <h3 style="margin:0 0 8px 0">Nos coordonnées</h3>
+          <div class="small" style="color:var(--muted)">Choisis la méthode la plus pratique pour toi.</div>
+        </div>
+
+        <div class="contact-item">
+          <div class="icon">📧</div>
+          <div>
+            <div style="font-weight:800">Email</div>
+            <div class="small"><a href="mailto:contact@medicalshop.tg">contact@medicalshop.tg</a></div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="icon">📞</div>
+          <div>
+            <div style="font-weight:800">Téléphones</div>
+            <div class="small">
+              <div><a href="tel:+22890981033">+228 90 98 10 33</a></div>
+              <div><a href="tel:+22897974094">+228 97 97 40 94</a></div>
+              <div><a href="tel:+22892026792">+228 92 02 67 92</a></div>
+              <div><a href="tel:+22898270022">+228 98 27 00 22</a></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="icon">📍</div>
+          <div>
+            <div style="font-weight:800">Adresse</div>
+            <div class="small">Quartier Tokoin, Lomé — Togo</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-weight:800; margin-top:8px">Réseaux</div>
+          <div class="socials" aria-label="Réseaux sociaux">
+            <!-- WhatsApp -->
+            <a href="https://wa.me/22890000001" target="_blank" rel="noopener" title="WhatsApp" aria-label="WhatsApp">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.52 3.48A11.95 11.95 0 0012 0C5.373 0 .001 5.373 0 12c0 2.116.553 4.18 1.6 6.02L0 24l6.11-1.59A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12 0-3.2-1.25-6.17-3.48-8.52z" fill="#25D366"/><path d="M17.6 14.54c-.27-.14-1.6-.8-1.85-.9-.25-.12-.43-.18-.61.18-.18.36-.7.9-.86 1.09-.16.18-.33.21-.6.07-.27-.14-1.12-.41-2.13-1.32-.79-.71-1.32-1.58-1.48-1.86-.16-.28-.02-.43.12-.57.12-.12.27-.33.4-.5.12-.18.16-.27.25-.45.08-.18.03-.34-.02-.48-.05-.14-.61-1.47-.84-2.01-.22-.52-.45-.45-.61-.45-.16 0-.35-.02-.54-.02-.18 0-.48.07-.73.34-.25.27-.95.93-.95 2.27 0 1.35.97 2.66 1.11 2.84.14.18 1.92 2.96 4.66 4.03 1.08.45 1.83.72 2.46.92.98.33 1.87.28 2.58.17.79-.12 1.6-.66 1.83-1.3.23-.64.23-1.2.16-1.3-.07-.12-.25-.18-.52-.32z" fill="#fff"/></svg>
+            </a>
+            <!-- Facebook -->
+            <a href="https://facebook.com" target="_blank" rel="noopener" title="Facebook" aria-label="Facebook">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg"><path d="M22 12.07C22 6.48 17.52 2 11.93 2S2 6.48 2 12.07C2 17.1 5.88 21.2 10.66 21.95v-6.94h-2.9v-2.99h2.9V9.41c0-2.86 1.7-4.43 4.3-4.43 1.25 0 2.56.22 2.56.22v2.81h-1.44c-1.42 0-1.86.88-1.86 1.78v2.12h3.17l-.51 2.99h-2.66v6.94C18.12 21.2 22 17.1 22 12.07z"/></svg>
+            </a>
+            <!-- X (Twitter) -->
+            <a href="https://twitter.com" target="_blank" rel="noopener" title="X" aria-label="X">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#1DA1F2" xmlns="http://www.w3.org/2000/svg"><path d="M23 4.56c-.8.36-1.67.6-2.58.71.93-.56 1.64-1.45 1.98-2.51-.87.52-1.84.9-2.87 1.1C18.6 2.9 17.41 2 16.06 2c-2.22 0-4.02 1.79-4.02 4.01 0 .31.03.61.09.9-3.34-.17-6.3-1.77-8.28-4.21-.35.6-.55 1.29-.55 2.03 0 1.4.71 2.63 1.8 3.36-.66-.02-1.29-.2-1.83-.5v.05c0 1.94 1.38 3.55 3.22 3.92-.33.09-.68.14-1.04.14-.25 0-.5-.02-.74-.07.5 1.55 1.94 2.68 3.64 2.71C7.9 18.9 6.08 19.6 4.12 19.6c-.27 0-.53-.02-.79-.05 1.5.96 3.28 1.52 5.19 1.52 6.23 0 9.63-5.16 9.63-9.63v-.44c.66-.48 1.22-1.08 1.67-1.76-.6.27-1.24.46-1.92.55.69-.42 1.2-1.07 1.44-1.84z"/></svg>
+            </a>
+            <!-- TikTok -->
+            <a href="https://tiktok.com" target="_blank" rel="noopener" title="TikTok" aria-label="TikTok">
+              <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="#000" d="M12.5 2v10.2c0 1.9-1.55 3.45-3.45 3.45-1.9 0-3.45-1.55-3.45-3.45s1.55-3.45 3.45-3.45c.19 0 .37.02.54.05V2h2.86z"/></svg>
+            </a>
+            <!-- Instagram -->
+            <a href="https://instagram.com" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#E1306C" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.2c3.2 0 3.584.012 4.85.07 1.17.056 1.8.24 2.22.403.54.207.93.455 1.34.863.41.41.656.8.864 1.34.164.42.348 1.05.403 2.22.058 1.27.07 1.65.07 4.85s-.012 3.58-.07 4.85c-.056 1.17-.24 1.8-.403 2.22-.207.54-.455.93-.863 1.34-.41.41-.8.656-1.34.864-.42.164-1.05.348-2.22.403-1.27.058-1.65.07-4.85.07s-3.58-.012-4.85-.07c-1.17-.056-1.8-.24-2.22-.403-.54-.207-.93-.455-1.34-.863-.41-.41-.656-.8-.864-1.34-.164-.42-.348-1.05-.403-2.22C2.212 15.58 2.2 15.2 2.2 12s.012-3.58.07-4.85c.056-1.17.24-1.8.403-2.22.207-.54.455-.93.863-1.34.41-.41.8-.656 1.34-.864.42-.164 1.05-.348 2.22-.403C8.42 2.212 8.8 2.2 12 2.2zM12 0C8.74 0 8.332.014 7.052.072 5.78.13 4.845.312 4.07.57c-.8.274-1.48.64-2.16 1.32-.68.68-1.046 1.36-1.32 2.16-.258.776-.44 1.71-.498 2.982C-.014 8.332 0 8.74 0 12s.014 3.668.072 4.948c.058 1.272.24 2.206.498 2.982.274.8.64 1.48 1.32 2.16.68.68 1.36 1.046 2.16 1.32.776.258 1.71.44 2.982.498C8.332 23.986 8.74 24 12 24s3.668-.014 4.948-.072c1.272-.058 2.206-.24 2.982-.498.8-.274 1.48-.64 2.16-1.32.68-.68 1.046-1.36 1.32-2.16.258-.776.44-1.71.498-2.982C23.986 15.668 24 15.26 24 12s-.014-3.668-.072-4.948c-.058-1.272-.24-2.206-.498-2.982-.274-.8-.64-1.48-1.32-2.16-.68-.68-1.36-1.046-2.16-1.32C19.154.312 18.22.13 16.948.072 15.668.014 15.26 0 12 0z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <div style="font-weight:800">Heures</div>
+          <div class="small">Lun - Ven : 08h - 18h • Sam : 09h - 14h</div>
+        </div>
+      </aside>
+    </div>
+
+    <div id="resultDiag" style="max-width:var(--max-width); margin:8px auto; padding:0 18px"></div>
+  </div>
+
+  <footer>
+    <div class="footer-inner container">
+      <div style="font-weight:800">MedicalShop</div>
+      <div class="small">© <span id="year"></span> MedicalShop — Support & commandes</div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      const form = document.getElementById('contactForm');
+      const btnSend = document.getElementById('btnSend');
+      const btnReset = document.getElementById('btnReset');
+      const formMsg = document.getElementById('formMsg');
+      const resultDiag = document.getElementById('resultDiag');
+
+      // simple client validation
+      function validate(formData) {
+        const errors = [];
+        if (!formData.get('name') || !formData.get('name').trim()) errors.push('Nom requis');
+        const email = (formData.get('email')||'').trim();
+        if (!email) errors.push('Email requis');
+        else {
+          // basic email regex
+          const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!re.test(email)) errors.push('Email invalide');
+        }
+        if (!formData.get('subject') || !formData.get('subject').trim()) errors.push('Sujet requis');
+        if (!formData.get('message') || !formData.get('message').trim()) errors.push('Message requis');
+        return errors;
+      }
+
+      async function postToServer(payload){
+        // try common endpoints: /api/send-email or /api/contact or /send-email
+        const tries = ['/api/send-email','/api/contact','/send-email'];
+        for (const url of tries) {
+          try {
+            const res = await fetch(url, {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+              const json = await res.json().catch(()=>({ success:true }));
+              return { ok:true, json };
+            } else {
+              // continue trying other endpoints
+              console.warn('contact: endpoint returned', res.status, url);
+            }
+          } catch (err) {
+            console.warn('contact: fetch error', url, err);
+          }
+        }
+        return { ok:false, error: 'No endpoint' };
+      }
+
+      function showMessage(text, kind='ok'){
+        formMsg.textContent = text;
+        formMsg.className = 'msg ' + (kind === 'ok' ? 'ok' : 'err');
+      }
+
+      btnReset.addEventListener('click', ()=> {
+        form.reset();
+        formMsg.textContent = '';
+        formMsg.className = '';
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        formMsg.textContent = '';
+        formMsg.className = '';
+        resultDiag.textContent = '';
+
+        const fd = new FormData(form);
+        const errors = validate(fd);
+        if (errors.length) { showMessage(errors.join(' • '), 'err'); return; }
+
+        const payload = {
+          name: fd.get('name').trim(),
+          email: fd.get('email').trim(),
+          phone: (fd.get('phone')||'').trim(),
+          subject: fd.get('subject').trim(),
+          message: fd.get('message').trim(),
+          sent_at: new Date().toISOString()
+        };
+
+        // optimistic UI
+        showMessage('Envoi en cours…', 'ok');
+        btnSend.disabled = true;
+
+        // attempt server POST
+        const res = await postToServer(payload);
+        if (res.ok) {
+          showMessage('Message envoyé — merci, nous reviendrons vers vous.', 'ok');
+          form.reset();
+          btnSend.disabled = false;
+          resultDiag.innerHTML = '<div class="small" style="margin-top:8px;color:var(--muted)">Si tu veux envoyer aussi une copie par mail local, utilise la seconde option ci-dessous.</div>';
+          return;
+        }
+
+        // fallback: open mailto
+        try {
+          const to = 'profzzen@gmail.com'; // email fourni plus tôt — tu peux modifier
+          const subject = encodeURIComponent(payload.subject + ' — ' + payload.name);
+          const body = encodeURIComponent(`Nom: ${payload.name}\nEmail: ${payload.email}\nTéléphone: ${payload.phone}\n\nMessage:\n${payload.message}`);
+          const mailto = `mailto:${to}?subject=${subject}&body=${body}`;
+          // open in new tab to avoid losing page (some browsers block)
+          window.location.href = mailto;
+          showMessage('Aucun endpoint serveur trouvé — ouverture du client mail (fallback).', 'ok');
+        } catch (err) {
+          console.error(err);
+          showMessage('Impossible d’envoyer le message. Vérifie ta connexion ou configure un endpoint serveur.', 'err');
+        } finally {
+          btnSend.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
