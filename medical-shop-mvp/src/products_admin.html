@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Produits • Admin — MedicalShop</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg-1:#061025; --panel:#0f172a; --accent:#1f6feb; --muted:#94a3b8; --white:#e6eef8;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:Inter,system-ui,Roboto,Arial; color:var(--white); background:linear-gradient(180deg,var(--bg-1),#071428); }
+    .top{ display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid rgba(255,255,255,0.03) }
+    .brand{ display:flex; gap:10px; align-items:center; font-weight:800 }
+    .container{ max-width:1200px; margin:18px auto; padding:0 16px 60px; }
+    .panel{ background:linear-gradient(180deg,var(--panel),#071428); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.04) }
+    .controls{ display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap }
+    input, select { padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.02); color:var(--white) }
+    .table { width:100%; border-collapse:collapse; margin-top:10px }
+    .table th, .table td { text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,0.03) }
+    .thumb{ width:140px; height:90px; background:#081025; display:grid; place-items:center; border-radius:8px; overflow:hidden }
+    .thumb img{ width:100%; height:100%; object-fit:cover }
+    .actions { display:flex; gap:8px }
+    .btn { background:linear-gradient(135deg,var(--accent),#3ea1ff); border:0; color:white; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer }
+    .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted) }
+    .pagination{ display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:12px }
+    .muted{ color:var(--muted) } .small{ font-size:12px }
+    @media (max-width:900px){ .thumb{ display:none } }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand"><div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#1f6feb,#22c55e);display:grid;place-items:center">M+</div>Produits (Admin)</div>
+    <div style="margin-left:auto"><a href="admin.html" style="color:var(--muted);text-decoration:none">← Retour Dashboard</a></div>
+  </div>
+
+  <main class="container">
+    <div class="panel">
+      <div class="controls">
+        <input id="q" placeholder="Recherche titre / SKU..." style="width:320px" />
+        <select id="catFilter"><option value="">Toutes catégories</option></select>
+        <select id="statusFilter"><option value="">Tous</option><option value="active">Actifs</option><option value="inactive">Inactifs</option></select>
+        <select id="sortBy"><option value="created_desc">Tri: date (plus récent)</option><option value="price_asc">Prix ↑</option><option value="price_desc">Prix ↓</option></select>
+        <button id="btnFilter" class="btn ghost">Appliquer</button>
+        <button id="btnCreate" class="btn">Créer produit</button>
+      </div>
+
+      <table class="table" role="table" aria-label="Liste produits">
+        <thead>
+          <tr><th>Produit</th><th>Prix</th><th>Stock</th><th>Catégorie</th><th>Créé</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+
+      <div class="pagination">
+        <div id="pagerInfo" class="small muted"></div>
+        <button id="prevPage" class="btn ghost">Préc</button>
+        <button id="nextPage" class="btn ghost">Suiv</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL ÉDITION / CRÉATION -->
+  <div id="modal" style="display:none;position:fixed;inset:0;place-items:center;background:rgba(0,0,0,0.6);z-index:200">
+    <div style="width:100%;max-width:920px" class="panel">
+      <h3 id="mTitle">Modifier</h3>
+      <form id="mForm">
+        <input type="hidden" id="mId">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="flex:1; min-width:260px">
+            <input id="mTitleInput" placeholder="Titre" style="width:100%; margin-bottom:8px" />
+            <input id="mPriceInput" type="number" placeholder="Prix" style="width:120px; margin-bottom:8px" />
+            <input id="mStockInput" type="number" placeholder="Stock" style="width:120px; margin-bottom:8px" />
+            <select id="mCategory"></select>
+            <textarea id="mDesc" style="width:100%;margin-top:8px;min-height:80px" placeholder="Description courte"></textarea>
+            <div style="margin-top:8px; display:flex; gap:8px">
+              <button id="mSave" class="btn">Enregistrer</button>
+              <button id="mCancel" class="btn ghost" type="button">Annuler</button>
+              <button id="mDelete" class="btn ghost" type="button">Supprimer</button>
+            </div>
+            <div id="mMsg" class="small muted" style="margin-top:8px"></div>
+            <div id="mPath" class="small muted" style="margin-top:6px"></div>
+          </div>
+          <div style="width:200px">
+            <div class="thumb" id="mThumb"><span class="small muted">Aperçu</span></div>
+            <input id="mImage" type="file" accept="image/png,image/jpeg" style="margin-top:8px">
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const SUPABASE_URL = "https://vrzmowqzegmaymewmbij.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyem1vd3F6ZWdtYXltZXdtYmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMDMwNzksImV4cCI6MjA3MDg3OTA3OX0.TmkdqXhkVgbfhAWVj-qLC9bDTL0-_YoGz-SgS81sNG0";
+    const REDIRECT_LOGIN = "admin-login.html";
+    // Edge optionnelles
+    const EDGE_ADD_PRODUCT_URL = "";
+    const EDGE_UPDATE_PRODUCT_URL = "";
+    const EDGE_DELETE_PRODUCT_URL = "";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const $ = s => document.querySelector(s);
+    const tbody = $("#tbody");
+    const q = $("#q");
+    const catFilter = $("#catFilter");
+    const statusFilter = $("#statusFilter");
+    const sortBy = $("#sortBy");
+    const btnFilter = $("#btnFilter");
+    const btnCreate = $("#btnCreate");
+    const prevPage = $("#prevPage");
+    const nextPage = $("#nextPage");
+    const pagerInfo = $("#pagerInfo");
+
+    const modal = $("#modal");
+    const mForm = $("#mForm");
+    const mId = $("#mId");
+    const mTitleInput = $("#mTitleInput");
+    const mPriceInput = $("#mPriceInput");
+    const mStockInput = $("#mStockInput");
+    const mCategory = $("#mCategory");
+    const mDesc = $("#mDesc");
+    const mThumb = $("#mThumb");
+    const mImage = $("#mImage");
+    const mSave = $("#mSave");
+    const mCancel = $("#mCancel");
+    const mDelete = $("#mDelete");
+    const mMsg = $("#mMsg");
+    const mPath = $("#mPath");
+
+    let page = 0;
+    const PAGE_SIZE = 12;
+    let totalCount = 0;
+    let categories = []; // {id,name}
+
+    async function ensureAdmin(){
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) { window.location.href = REDIRECT_LOGIN; return false; }
+      // vérifie admins
+      const { data, error } = await supabase.from('admins').select('user_id').eq('user_id', userData.user.id).limit(1);
+      if (error || !data || data.length === 0) { alert('Accès admin requis'); await supabase.auth.signOut(); window.location.href = REDIRECT_LOGIN; return false; }
+      return true;
+    }
+
+    async function loadCategories(){
+      const { data, error } = await supabase.from('categories').select('id,name').eq('is_active', true).order('name',{ascending:true});
+      categories = data || [];
+      // filtres
+      catFilter.innerHTML = '<option value="">Toutes catégories</option>';
+      categories.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.name; catFilter.appendChild(o); });
+      // modal select
+      mCategory.innerHTML = '<option value="">— Choisir —</option>';
+      categories.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.name; mCategory.appendChild(o); });
+    }
+
+    function catNameById(id){ return categories.find(c => c.id === id)?.name || (id || ''); }
+
+    async function init(){
+      const ok = await ensureAdmin(); if (!ok) return;
+      await loadCategories();
+      await loadPage();
+      attachHandlers();
+    }
+
+    function attachHandlers(){
+      btnFilter.addEventListener('click', ()=> { page = 0; loadPage(); });
+      q.addEventListener('keydown', (e)=>{ if (e.key==='Enter') { page=0; loadPage(); }});
+      btnCreate.addEventListener('click', ()=> openModalForNew());
+      prevPage.addEventListener('click', ()=> { if (page>0) { page--; loadPage(); }});
+      nextPage.addEventListener('click', ()=> { page++; loadPage(); });
+      mCancel.addEventListener('click', ()=> closeModal());
+      mForm.addEventListener('submit', async (e)=>{ e.preventDefault(); await saveModal(); });
+      mDelete.addEventListener('click', async ()=> { if (confirm('Supprimer ?')) { await deleteCurrent(); } });
+    }
+
+    async function loadPage(){
+      tbody.innerHTML = '<tr><td colspan="6">Chargement…</td></tr>';
+      let qb = supabase.from('products').select('id,title,price,stock,category_id,created_at,slug,is_active,image_url,image_path,sku,short_description', { count: 'exact' });
+
+      // tri
+      const sortVal = sortBy.value;
+      if (sortVal === 'price_asc') qb = qb.order('price', { ascending:true });
+      else if (sortVal === 'price_desc') qb = qb.order('price', { ascending:false });
+      else qb = qb.order('created_at', { ascending:false });
+
+      qb = qb.range(page*PAGE_SIZE, page*PAGE_SIZE + PAGE_SIZE -1);
+
+      if (q.value.trim()) qb = qb.ilike('title', `%${q.value.trim()}%`);
+      if (catFilter.value) qb = qb.eq('category_id', catFilter.value);
+      if (statusFilter.value === 'active') qb = qb.eq('is_active', true);
+      if (statusFilter.value === 'inactive') qb = qb.eq('is_active', false);
+
+      const { data, error, count } = await qb;
+      if (error) { tbody.innerHTML = '<tr><td colspan="6">Erreur chargement</td></tr>'; console.warn(error); return; }
+      totalCount = count || (data ? data.length : 0);
+      pagerInfo.textContent = `Page ${page+1} — ${totalCount} résultats (approx.)`;
+      if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Aucun produit</td></tr>'; return; }
+
+      tbody.innerHTML = '';
+      for (const p of data) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style="width:260px"><div style="display:flex;gap:12px;align-items:center">
+          <div class="thumb"><img src="${escapeHtml(p.image_url )}" alt=""></div>
+          <div><strong>${escapeHtml(p.title)}</strong><div class="small muted">${escapeHtml(p.sku || '')}</div></div>
+        </div></td>
+        <td>${Number(p.price).toLocaleString('fr-FR')} XOF</td>
+        <td>${p.stock ?? 0}</td>
+        <td>${escapeHtml(catNameById(p.category_id))}</td>
+        <td class="small muted">${new Date(p.created_at).toLocaleString()}</td>
+        <td style="text-align:right"><div class="actions">
+          <button class="btn ghost btn-edit" data-id="${p.id}">Modifier</button>
+          <button class="btn ghost btn-dup" data-id="${p.id}">Dupliquer</button>
+          <button class="btn ghost btn-del" data-id="${p.id}">Supprimer</button>
+        </div></td>`;
+        tbody.appendChild(tr);
+      }
+      tbody.querySelectorAll('.btn-edit').forEach(b => b.addEventListener('click', (e)=> openModalForId(e.target.dataset.id)));
+      tbody.querySelectorAll('.btn-dup').forEach(b => b.addEventListener('click', (e)=> duplicateProduct(e.target.dataset.id)));
+      tbody.querySelectorAll('.btn-del').forEach(b => b.addEventListener('click', (e)=> { if (confirm('Supprimer ce produit ?')) deleteProduct(e.target.dataset.id); }));
+    }
+
+    async function openModalForId(id){
+      const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+      if (error) { alert('Erreur'); console.warn(error); return; }
+      mId.value = data.id;
+      mTitleInput.value = data.title || '';
+      mPriceInput.value = data.price || 0;
+      mStockInput.value = data.stock || 0;
+      mDesc.value = data.short_description || '';
+      mCategory.value = data.category_id || '';
+      mThumb.innerHTML = data.image_url ? `<img src="${escapeHtml(data.image_url)}">` : '<span class="small muted">Aperçu</span>';
+      mPath.textContent = data.image_path ? `image_path: ${data.image_path}` : '';
+      mMsg.textContent = '';
+      $("#mTitle").textContent = 'Modifier produit';
+      modal.style.display = 'grid';
+    }
+
+    function openModalForNew(){
+      mId.value = '';
+      mTitleInput.value = '';
+      mPriceInput.value = '';
+      mStockInput.value = 0;
+      mDesc.value = '';
+      mCategory.value = '';
+      mThumb.innerHTML = '<span class="small muted">Aperçu</span>';
+      mImage.value = '';
+      mPath.textContent = '';
+      $("#mTitle").textContent = 'Créer produit';
+      modal.style.display = 'grid';
+    }
+
+    function closeModal(){ modal.style.display = 'none'; }
+
+    // === Upload helper (retourne {url, path}) ===
+    async function fileToResizedFile(file, maxSize=1600){
+      const img = document.createElement('img');
+      const url = URL.createObjectURL(file);
+      await new Promise(res => { img.onload = res; img.src = url; });
+      let w=img.width, h=img.height;
+      if (Math.max(w,h) > maxSize) { const r = maxSize/Math.max(w,h); w=Math.round(w*r); h=Math.round(h*r); }
+      const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+      const mime = /jpe?g/i.test(file.type) ? 'image/jpeg' : 'image/png';
+      const dataUrl = canvas.toDataURL(mime, mime==='image/jpeg' ? 0.85 : 1.0);
+      URL.revokeObjectURL(url);
+      const [header, body] = dataUrl.split(',');
+      const bin = atob(body); let n = bin.length; const u8 = new Uint8Array(n);
+      while(n--) u8[n] = bin.charCodeAt(n);
+      return new File([u8], file.name, { type: mime });
+    }
+    async function uploadFileToStorage(file){
+      if (!file) return { url:null, path:null };
+      const f = await fileToResizedFile(file, 1600);
+      const path = `products/${Date.now()}_${f.name.replace(/\s+/g,'_')}`;
+      const { error: upErr } = await supabase.storage.from('products').upload(path, f, { cacheControl:'3600' });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from('products').getPublicUrl(path);
+      return { url: urlData.publicUrl, path };
+    }
+
+    async function saveModal(){
+      mMsg.textContent = '';
+      const id = mId.value || null;
+      const title = mTitleInput.value.trim();
+      const price = Number(mPriceInput.value || 0);
+      const stock = Number(mStockInput.value || 0);
+      const desc = mDesc.value.trim();
+      const category_id = mCategory.value || null;
+
+      if (!title || !price) { mMsg.textContent = 'Titre et prix requis'; return; }
+      try {
+        let image_url = null, image_path = null;
+        if (mImage.files?.[0]) {
+          const up = await uploadFileToStorage(mImage.files[0]); // nécessite politiques storage
+          image_url = up.url; image_path = up.path;
+        }
+
+        // Edge d’abord si dispo
+        if (!id && EDGE_ADD_PRODUCT_URL) {
+          try {
+            const body = { title, price, currency:'XOF', stock, short_description: desc, category_id, image_url, image_path, is_active:true };
+            const res = await fetchWithAuthJson(EDGE_ADD_PRODUCT_URL, body);
+            if (res.ok) {
+              const json = await res.json().catch(()=>({}));
+              if (json.success) { modal.style.display='none'; await loadPage(); return; }
+            }
+          } catch {}
+        }
+        if (id && EDGE_UPDATE_PRODUCT_URL) {
+          try {
+            const body = { id, title, price, currency:'XOF', stock, short_description: desc, category_id, image_url, image_path };
+            const res = await fetchWithAuthJson(EDGE_UPDATE_PRODUCT_URL, body);
+            if (res.ok) {
+              const json = await res.json().catch(()=>({}));
+              if (json.success) { modal.style.display='none'; await loadPage(); return; }
+            }
+          } catch {}
+        }
+
+        // Fallback client
+        if (!id) {
+          const payload = { title, price, stock, short_description: desc, category_id, image_url, image_path, currency:'XOF', is_active:true };
+          const { error } = await supabase.from('products').insert([payload]);
+          if (error) throw error;
+        } else {
+          const payload = { title, price, stock, short_description: desc, category_id };
+          if (image_url && image_path) { payload.image_url = image_url; payload.image_path = image_path; }
+          const { error } = await supabase.from('products').update(payload).eq('id', id);
+          if (error) throw error;
+        }
+        modal.style.display = 'none';
+        loadPage();
+      } catch (err) { console.error(err); mMsg.textContent = err.message || 'Erreur'; }
+    }
+
+    async function deleteCurrent(){
+      const id = mId.value;
+      if (!id) return;
+      try {
+        if (EDGE_DELETE_PRODUCT_URL) {
+          try {
+            const res = await fetchWithAuthJson(EDGE_DELETE_PRODUCT_URL, { id });
+            if (res.ok) {
+              const json = await res.json().catch(()=>({}));
+              if (json.success) { modal.style.display='none'; await loadPage(); return; }
+            }
+          } catch {}
+        }
+        await supabase.from('products').delete().eq('id', id);
+        modal.style.display='none';
+        loadPage();
+      } catch (err) { console.error(err); alert('Erreur suppression'); }
+    }
+
+    async function deleteProduct(id){
+      try {
+        if (EDGE_DELETE_PRODUCT_URL) {
+          try {
+            const res = await fetchWithAuthJson(EDGE_DELETE_PRODUCT_URL, { id });
+            if (res.ok) {
+              const json = await res.json().catch(()=>({}));
+              if (json.success) { await loadPage(); return; }
+            }
+          } catch {}
+        }
+        await supabase.from('products').delete().eq('id', id);
+        loadPage();
+      } catch (err) { alert('Erreur suppression'); console.error(err); }
+    }
+
+    async function duplicateProduct(id){
+      try {
+        const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+        if (error) throw error;
+        const p = data;
+        await supabase.from('products').insert([{
+          title: p.title + ' (copie)', price: p.price, stock: p.stock, category_id: p.category_id,
+          short_description: p.short_description, image_url: p.image_url, image_path: p.image_path, is_active:false, currency: p.currency || 'XOF'
+        }]);
+        loadPage();
+        alert('Produit dupliqué (inactif)');
+      } catch (err) { console.error(err); alert('Erreur'); }
+    }
+
+    async function fetchWithAuthJson(url, bodyObj) {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      return fetch(url, { method:'POST', headers, body: JSON.stringify(bodyObj) });
+    }
+
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    init();
+  </script>
+</body>
+</html>

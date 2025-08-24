@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Historique des commandes • MedicalShop</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg-1:#061025; --bg-2:#07182a; --panel:#0f172a; --accent:#1f6feb; --muted:#94a3b8; --white:#e6eef8;
+      --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:Inter,system-ui,Roboto,Arial; color:var(--white); background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); }
+    header.top{ display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.03) }
+    .brand{ display:flex; align-items:center; gap:12px; font-weight:800; font-size:18px }
+    .container{ max-width:1260px; margin:20px auto; padding:18px; }
+    .panel{ background:linear-gradient(180deg,var(--panel),#071428); border-radius:12px; padding:14px; border:1px solid rgba(255,255,255,0.04) }
+    .controls{ display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap }
+    input, select { padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.02); color:var(--white) }
+    .table{ width:100%; border-collapse:collapse; margin-top:10px }
+    .table th, .table td { text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,0.03) }
+    .btn{ background:linear-gradient(135deg,var(--accent),#3ea1ff); border:0; color:white; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer }
+    .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted) }
+    .status { padding:6px 8px; border-radius:999px; font-weight:700; font-size:12px }
+    .status.pending{ background:rgba(255,255,255,0.03); color:var(--muted) }
+    .status.confirmed{ background:linear-gradient(135deg,#18c38b,#10b981); color:white }
+    .status.rejected{ background:linear-gradient(135deg,#ff6b6b,#ff8a5c); color:white }
+    .pagination{ display:flex; gap:8px; justify-content:flex-end; align-items:center; margin-top:12px }
+    .diag{ color:#ffb86b; margin-top:8px }
+    .order-row{ display:flex; gap:12px; align-items:center }
+    .mini-thumb{ width:56px; height:48px; border-radius:6px; overflow:hidden; background:#071428; display:grid; place-items:center }
+    .mini-thumb img{ width:100%; height:100%; object-fit:cover }
+    @media (max-width:900px){ .table td:nth-child(3), .table th:nth-child(3){ display:none } }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><div style="width:40px;height:40px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,#1f6feb,#22c55e);font-weight:800">M+</div>Historique des commandes</div>
+    <nav style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+      <a href="admin.html" style="color:var(--muted); text-decoration:none; padding:8px 10px; border-radius:8px">← Retour Dashboard</a>
+      <a href="products_admin.html" style="color:var(--muted); text-decoration:none; padding:8px 10px; border-radius:8px">Produits</a>
+      <a href="index.html" style="color:var(--muted); text-decoration:none; padding:8px 10px; border-radius:8px">Site public</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0">Historique des commandes</h2>
+          <div class="small" style="color:var(--muted); margin-top:6px">Liste complète des transactions — actions : valider / rejeter</div>
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top:12px">
+        <input id="search" placeholder="Recherche ID / client / adresse..." style="width:320px" />
+        <select id="filterStatus"><option value="">Tous statuts</option><option value="pending">pending</option><option value="confirmed">confirmed</option><option value="cancelled">cancelled</option></select>
+        <select id="perPage"><option value="20">20 / page</option><option value="50">50 / page</option><option value="100">100 / page</option></select>
+        <button id="btnApply" class="btn ghost">Appliquer</button>
+        <div style="margin-left:auto; display:flex; gap:8px">
+          <button id="btnExport" class="btn ghost">Exporter (CSV)</button>
+        </div>
+      </div>
+
+      <table class="table" role="table" aria-label="Historique commandes">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Client</th>
+            <th>Montant</th>
+            <th>Statut</th>
+            <th>Créé</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="6">Chargement…</td></tr>
+        </tbody>
+      </table>
+
+      <div class="pagination" style="margin-top:12px">
+        <div id="pagerInfo" class="small muted"></div>
+        <button id="prevPage" class="btn ghost">Préc</button>
+        <button id="nextPage" class="btn ghost">Suiv</button>
+      </div>
+
+      <div id="diag" class="diag"></div>
+    </div>
+  </main>
+
+  <!-- Modal (reuse admin style) -->
+  <div id="modal" class="modal-backdrop" aria-hidden="true" style="display:none;position:fixed;inset:0;place-items:center;background:rgba(0,0,0,0.6);z-index:200">
+    <div class="modal panel">
+      <h3 id="modalTitle">Détails commande</h3>
+      <div id="modalContent"></div>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+        <button id="modalClose" class="btn ghost">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    // ---------- CONFIG (remplace si nécessaire) ----------
+    const SUPABASE_URL = "https://vrzmowqzegmaymewmbij.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyem1vd3F6ZWdtYXltZXdtYmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMDMwNzksImV4cCI6MjA3MDg3OTA3OX0.TmkdqXhkVgbfhAWVj-qLC9bDTL0-_YoGz-SgS81sNG0";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // DOM refs
+    const $ = s => document.querySelector(s);
+    const tbody = $("#tbody");
+    const search = $("#search");
+    const filterStatus = $("#filterStatus");
+    const perPage = $("#perPage");
+    const btnApply = $("#btnApply");
+    const prevPage = $("#prevPage");
+    const nextPage = $("#nextPage");
+    const pagerInfo = $("#pagerInfo");
+    const btnExport = $("#btnExport");
+    const diag = $("#diag");
+
+    const modal = $("#modal");
+    const modalContent = $("#modalContent");
+    const modalClose = $("#modalClose");
+
+    let page = 0;
+    let totalCount = 0;
+
+    // safe escape
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // Robust product fetch (works if products.id is uuid or bigint)
+    async function fetchProductsRobust(ids){
+      if (!ids || ids.length===0) return [];
+      try {
+        const { data } = await supabase.from('products').select('id,title,price,image_url,image_path,path,img_url').in('id', ids);
+        if (data && data.length>0) return data;
+      } catch(e){ /* ignore */ }
+      const numeric = ids.map(i=>Number(i)).filter(n=>Number.isFinite(n));
+      if (numeric.length>0) {
+        try {
+          const { data } = await supabase.from('products').select('id,title,price,image_url,image_path,path,img_url').in('id', numeric);
+          if (data && data.length>0) return data;
+        } catch(e){ /* ignore */ }
+      }
+      // last resort: per-id eq queries (slow)
+      const results = [];
+      for (const id of ids) {
+        try {
+          const { data } = await supabase.from('products').select('id,title,price,image_url,image_path,path,img_url').eq('id', id).limit(1);
+          if (data && data.length>0) results.push(data[0]);
+        } catch(e){}
+      }
+      return results;
+    }
+
+    function chooseImgField(p){
+      return p?.image_url || p?.image_path || p?.path || p?.img_url || null;
+    }
+
+    // attach ui handlers
+    btnApply.addEventListener('click', ()=> { page = 0; loadPage(); });
+    prevPage.addEventListener('click', ()=> { if (page>0) { page--; loadPage(); }});
+    nextPage.addEventListener('click', ()=> { page++; loadPage(); });
+    btnExport.addEventListener('click', exportCsv);
+    search.addEventListener('keydown', (e)=> { if (e.key === 'Enter') { page = 0; loadPage(); } });
+    modalClose.addEventListener('click', ()=> showModal(false));
+
+    // Try nested select then fallback
+    async function loadPage(){
+      tbody.innerHTML = '<tr><td colspan="6">Chargement…</td></tr>';
+      diag.textContent = '';
+      const per = Number(perPage.value || 20);
+      const from = page * per;
+      const to = from + per - 1;
+      try {
+        let qb = supabase.from('orders').select('*, order_items(*)').order('created_at',{ascending:false}).range(from,to);
+        if (filterStatus.value) qb = qb.eq('status', filterStatus.value);
+        if (search.value.trim()) {
+          const q = search.value.trim();
+          qb = qb.or(`id.ilike.%${q}%,user_id.ilike.%${q}%,customer_id.ilike.%${q}%,shipping_address.ilike.%${q}%`);
+        }
+        const nested = await qb;
+        if (nested.error) {
+          console.warn('nested select failed, falling back', nested.error);
+          return await loadPageFallback(from,to,nested.error);
+        }
+        const data = nested.data || [];
+        totalCount = nested.count ?? (data ? data.length : 0);
+        pagerInfo.textContent = `Page ${page+1} — ${totalCount} résultats (approx.)`;
+
+        if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Aucun résultat</td></tr>'; return; }
+
+        // build prod ids
+        const prodIdsSet = new Set();
+        data.forEach(o => (o.order_items||[]).forEach(it => { if (it.product_id !== undefined && it.product_id !== null) prodIdsSet.add(String(it.product_id)); }));
+        const prodIds = Array.from(prodIdsSet);
+        const products = await fetchProductsRobust(prodIds);
+        const productsMap = {}; products.forEach(p => productsMap[String(p.id)] = p);
+
+        // render rows
+        tbody.innerHTML = '';
+        data.forEach(o => {
+          const when = new Date(o.placed_at || o.created_at || Date.now()).toLocaleString();
+          const statusClass = o.status === 'pending' ? 'pending' : (o.status === 'confirmed' ? 'confirmed' : 'rejected');
+          // show mini thumb of first item if available
+          let thumbHtml = '<div class="mini-thumb"><span class="small muted">—</span></div>';
+          if (o.order_items && o.order_items.length>0) {
+            const first = o.order_items[0];
+            const p = productsMap[String(first.product_id)];
+            const img = p ? chooseImgField(p) : null;
+            if (img) thumbHtml = `<div class="mini-thumb"><img src="${escapeHtml(img)}" alt=""></div>`;
+          }
+          const clientLabel = o.customer_email || o.customer_id || o.user_email || o.user_id || 'Client anonyme';
+          const totalVal = Number(o.total ?? o.total_amount ?? 0).toLocaleString('fr-FR');
+          const itemsSummary = (o.order_items||[]).map(it => {
+            const p = productsMap[String(it.product_id)] || null;
+            return (p ? p.title : (`id:${String(it.product_id).slice(0,6)}`)) + '×' + (it.quantity||1);
+          }).slice(0,3).join(' / ');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td style="width:220px"><div class="order-row">${thumbHtml}<div style="margin-left:10px"><div style="font-weight:700">${escapeHtml(String(o.id).slice(0,12))}</div><div class="small muted">${escapeHtml(itemsSummary)}</div></div></div></td>
+            <td>${escapeHtml(clientLabel)}</td>
+            <td>${escapeHtml(totalVal)} ${escapeHtml(o.currency || 'XOF')}</td>
+            <td><span class="status ${statusClass}">${escapeHtml(o.status||'')}</span></td>
+            <td class="small muted">${escapeHtml(when)}</td>
+            <td style="text-align:right">
+              <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+                <button class="btn ghost btn-view" data-id="${escapeHtml(o.id)}">Voir</button>
+                ${o.status === 'pending' ? `<button class="btn btn-accept" data-id="${escapeHtml(o.id)}">Valider</button><button class="btn ghost btn-reject" data-id="${escapeHtml(o.id)}">Rejeter</button>` : ''}
+              </div>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+
+        attachRowHandlers();
+      } catch (err) {
+        console.error('loadPage err', err);
+        await loadPageFallback(from,to,err);
+      }
+    }
+
+    // fallback fetch: orders then order_items then products
+    async function loadPageFallback(from,to,prevErr){
+      tbody.innerHTML = '<tr><td colspan="6">Chargement…</td></tr>';
+      diag.textContent = '';
+      try {
+        let qb = supabase.from('orders').select('*', { count:'exact' }).order('created_at',{ascending:false}).range(from,to);
+        if (filterStatus.value) qb = qb.eq('status', filterStatus.value);
+        if (search.value.trim()) qb = qb.or(`id.ilike.%${search.value.trim()}%,user_id.ilike.%${search.value.trim()}%,customer_id.ilike.%${search.value.trim()}%,shipping_address.ilike.%${search.value.trim()}%`);
+        const { data, error, count } = await qb;
+        if (error) {
+          console.warn('fallback orders fetch failed', error);
+          tbody.innerHTML = '<tr><td colspan="6">Erreur chargement</td></tr>';
+          diag.textContent = `Erreur: ${error.message || error.toString()}`;
+          if (String(error.message).toLowerCase().includes('row-level') || error.code === '42501') {
+            diag.textContent += ' — Vérifie les policies RLS (orders / order_items).';
+          }
+          return;
+        }
+        totalCount = count || (data ? data.length : 0);
+        pagerInfo.textContent = `Page ${page+1} — ${totalCount} résultats (approx.)`;
+        if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Aucun résultat</td></tr>'; return; }
+
+        const orderIds = data.map(o => o.id).filter(Boolean);
+        let orderItems = [];
+        if (orderIds.length > 0) {
+          const { data: items, error: itErr } = await supabase.from('order_items').select('*').in('order_id', orderIds);
+          if (itErr) {
+            console.warn('order_items fetch failed', itErr);
+            diag.textContent = 'Impossible de lire order_items — vérifie les policies RLS.';
+            // render orders without items (still useful)
+            renderOrdersWithoutItems(data);
+            return;
+          }
+          orderItems = items || [];
+        }
+
+        const itemsByOrder = {};
+        orderItems.forEach(it => { (itemsByOrder[it.order_id] = itemsByOrder[it.order_id] || []).push(it); });
+
+        // gather product ids
+        const prodIds = new Set();
+        orderItems.forEach(it => { if (it.product_id !== undefined && it.product_id !== null) prodIds.add(String(it.product_id)); });
+        const prodIdsArr = Array.from(prodIds);
+        const products = await fetchProductsRobust(prodIdsArr);
+        const productsMap = {};
+        products.forEach(p => productsMap[String(p.id)] = p);
+
+        // build rows
+        tbody.innerHTML = '';
+        data.forEach(o => {
+          const itemsForOrder = itemsByOrder[o.id] || [];
+          const when = new Date(o.placed_at || o.created_at || Date.now()).toLocaleString();
+          const statusClass = o.status === 'pending' ? 'pending' : (o.status === 'confirmed' ? 'confirmed' : 'rejected');
+          let thumbHtml = '<div class="mini-thumb"><span class="small muted">—</span></div>';
+          if (itemsForOrder.length>0) {
+            const first = itemsForOrder[0];
+            const p = productsMap[String(first.product_id)];
+            const img = p ? chooseImgField(p) : null;
+            if (img) thumbHtml = `<div class="mini-thumb"><img src="${escapeHtml(img)}" alt=""></div>`;
+          }
+          const clientLabel = o.customer_email || o.customer_id || o.user_email || o.user_id || 'Client anonyme';
+          const totalVal = Number(o.total ?? o.total_amount ?? 0).toLocaleString('fr-FR');
+          const itemsSummary = (itemsForOrder||[]).map(it => {
+            const p = productsMap[String(it.product_id)] || null;
+            return (p ? p.title : (`id:${String(it.product_id).slice(0,6)}`)) + '×' + (it.quantity||1);
+          }).slice(0,3).join(' / ');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td style="width:220px"><div class="order-row">${thumbHtml}<div style="margin-left:10px"><div style="font-weight:700">${escapeHtml(String(o.id).slice(0,12))}</div><div class="small muted">${escapeHtml(itemsSummary)}</div></div></div></td>
+            <td>${escapeHtml(clientLabel)}</td>
+            <td>${escapeHtml(totalVal)} ${escapeHtml(o.currency || 'XOF')}</td>
+            <td><span class="status ${statusClass}">${escapeHtml(o.status||'')}</span></td>
+            <td class="small muted">${escapeHtml(when)}</td>
+            <td style="text-align:right">
+              <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+                <button class="btn ghost btn-view" data-id="${escapeHtml(o.id)}">Voir</button>
+                ${o.status === 'pending' ? `<button class="btn btn-accept" data-id="${escapeHtml(o.id)}">Valider</button><button class="btn ghost btn-reject" data-id="${escapeHtml(o.id)}">Rejeter</button>` : ''}
+              </div>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+
+        attachRowHandlers();
+      } catch (err) {
+        console.error('loadPageFallback err', err, prevErr);
+        tbody.innerHTML = '<tr><td colspan="6">Erreur</td></tr>';
+        diag.textContent = 'Erreur réseau (voir console).';
+      }
+    }
+
+    function renderOrdersWithoutItems(orders){
+      tbody.innerHTML = '';
+      orders.forEach(o => {
+        const when = new Date(o.placed_at || o.created_at || Date.now()).toLocaleString();
+        const statusClass = o.status === 'pending' ? 'pending' : (o.status === 'confirmed' ? 'confirmed' : 'rejected');
+        const clientLabel = o.customer_email || o.customer_id || o.user_email || o.user_id || 'Client anonyme';
+        const totalVal = Number(o.total ?? o.total_amount ?? 0).toLocaleString('fr-FR');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(String(o.id).slice(0,12))}</td><td>${escapeHtml(clientLabel)}</td><td>${escapeHtml(totalVal)} ${escapeHtml(o.currency || 'XOF')}</td><td><span class="status ${statusClass}">${escapeHtml(o.status||'')}</span></td><td class="small muted">${escapeHtml(when)}</td><td style="text-align:right"><button class="btn ghost btn-view" data-id="${escapeHtml(o.id)}">Voir</button></td>`;
+        tbody.appendChild(tr);
+      });
+      attachRowHandlers();
+    }
+
+    function attachRowHandlers(){
+      tbody.querySelectorAll('.btn-accept').forEach(b => b.addEventListener('click', async (e) => {
+        if (!confirm('Valider cette commande ?')) return;
+        await changeOrderStatus(e.target.dataset.id, 'confirmed');
+      }));
+      tbody.querySelectorAll('.btn-reject').forEach(b => b.addEventListener('click', async (e) => {
+        if (!confirm('Rejeter cette commande ?')) return;
+        await changeOrderStatus(e.target.dataset.id, 'cancelled');
+      }));
+      tbody.querySelectorAll('.btn-view').forEach(b => b.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        await showOrderDetailModal(id);
+      }));
+    }
+
+    // show modal details: fetch order + items + product info
+    async function showOrderDetailModal(orderId){
+      try {
+        // attempt nested select
+        const { data: nestedData, error: nestedErr } = await supabase.from('orders').select('*, order_items(*)').eq('id', orderId).single();
+        if (nestedErr) {
+          console.warn('nested fetch for modal failed', nestedErr);
+          // fallback: fetch order, then items
+          const { data: ord, error: ordErr } = await supabase.from('orders').select('*').eq('id', orderId).single();
+          if (ordErr || !ord) { alert('Impossible de récupérer la commande (voir console)'); console.error(ordErr); return; }
+          const { data: items, error: itErr } = await supabase.from('order_items').select('*').eq('order_id', orderId);
+          if (itErr) console.warn('could not fetch items', itErr);
+          const prodIds = (items||[]).map(it=>String(it.product_id)).filter(Boolean);
+          const products = await fetchProductsRobust(prodIds);
+          const productsMap = {}; products.forEach(p=> productsMap[String(p.id)] = p);
+          showModalContent(ord, items || [], productsMap);
+          return;
+        }
+        const order = nestedData;
+        const prodIds = (order.order_items||[]).map(it=>String(it.product_id)).filter(Boolean);
+        const products = await fetchProductsRobust(prodIds);
+        const productsMap = {}; products.forEach(p=> productsMap[String(p.id)] = p);
+        showModalContent(order, order.order_items || [], productsMap);
+      } catch (err) {
+        console.error('showOrderDetailModal err', err);
+        alert('Erreur (voir console)');
+      }
+    }
+
+    function showModalContent(order, items, productsMap){
+      const totalVal = Number(order.total ?? order.total_amount ?? 0).toLocaleString('fr-FR');
+      let html = `<div style="display:flex;gap:14px;align-items:flex-start;">
+        <div style="min-width:220px">
+          <div style="font-weight:800;font-size:18px">#${escapeHtml((order.id||'').toString().slice(0,12))}</div>
+          <div class="small muted" style="margin-top:6px">${escapeHtml(new Date(order.created_at||order.placed_at||Date.now()).toLocaleString())}</div>
+          <div style="margin-top:10px" class="small muted">Client: <strong>${escapeHtml(order.customer_email || order.user_email || order.customer_id || order.user_id || 'Client anonyme')}</strong></div>
+          <div class="small muted">Téléphone: ${escapeHtml(order.phone || '')}</div>
+          <div class="small muted">Order name: ${escapeHtml(order.order_name || '')}</div>
+          <div class="small muted">Order #: ${escapeHtml(order.order_number || '')}</div>
+          <div style="margin-top:8px; font-weight:800">Total: ${escapeHtml(totalVal)} ${escapeHtml(order.currency||'XOF')}</div>
+          <div style="margin-top:8px" class="small muted">Adresse: ${escapeHtml(order.shipping_address || '')}</div>
+          <div style="margin-top:8px" class="small muted">Statut: ${escapeHtml(order.status || '')}</div>
+        </div>
+        <div style="flex:1">
+          <h4 style="margin:0 0 8px 0">Articles</h4>
+          <div style="display:flex;flex-direction:column;gap:8px">`;
+
+      (items || []).forEach(it => {
+        const p = productsMap[String(it.product_id)] || null;
+        const title = p ? p.title : `id:${(it.product_id||'').toString().slice(0,6)}`;
+        const img = p ? chooseImgField(p) : '/nbbcl.png';
+        html += `<div style="display:flex;gap:10px;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)">
+          <div style="width:72px;height:72px;border-radius:8px;overflow:hidden"><img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover"></div>
+          <div style="flex:1">
+            <div style="font-weight:700">${escapeHtml(title)}</div>
+            <div class="small muted">Quantité: ${escapeHtml(String(it.quantity || 1))} — Prix au moment de la commande: ${escapeHtml(String(it.price_at_order || ''))}</div>
+            <div class="small muted">Item status: ${escapeHtml(it.status || 'pending')}</div>
+          </div>
+        </div>`;
+      });
+
+      html += `</div></div></div>`;
+      modalContent.innerHTML = html;
+      showModal(true);
+    }
+
+    function showModal(show){
+      modal.style.display = show ? 'grid' : 'none';
+      modal.setAttribute('aria-hidden', show ? 'false' : 'true');
+    }
+
+    // status update: update order and order_items (best-effort)
+    async function changeOrderStatus(orderId, newStatus){
+      try {
+        const { error: e1 } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+        if (e1) throw e1;
+        // update items
+        const { error: e2 } = await supabase.from('order_items').update({ status: newStatus }).eq('order_id', orderId);
+        if (e2) console.warn('order_items update failed', e2);
+        await loadPage();
+      } catch (err) {
+        console.error('changeOrderStatus err', err);
+        alert('Erreur changement statut (voir console)');
+      }
+    }
+
+    // export CSV for current page
+    async function exportCsv(){
+      try {
+        const per = Number(perPage.value || 20);
+        const from = page * per;
+        const to = from + per - 1;
+        let qb = supabase.from('orders').select('*').order('created_at',{ascending:false}).range(from,to);
+        if (filterStatus.value) qb = qb.eq('status', filterStatus.value);
+        if (search.value.trim()) qb = qb.or(`id.ilike.%${search.value.trim()}%,user_id.ilike.%${search.value.trim()}%`);
+        const { data, error } = await qb;
+        if (error) { alert('Erreur export: ' + error.message); return; }
+        if (!data || data.length === 0) { alert('Aucune donnée à exporter'); return; }
+        const csv = [
+          ['id','user_id','customer_email','status','total','currency','created_at','shipping_address'],
+          ...data.map(r => [r.id, r.user_id, r.customer_email || r.customer_id, r.status, r.total ?? r.total_amount, r.currency, r.created_at, `"${(r.shipping_address||'').replace(/"/g,'""')}"`])
+        ].map(row => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `orders_export_page${page+1}.csv`; a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) { console.error('exportCsv err', err); alert('Erreur export'); }
+    }
+
+    // init: quick auth check and load
+    (async function init(){
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user) { window.location.href = 'admin-login.html'; return; }
+      } catch (err) { console.error('auth check failed', err); }
+      await loadPage();
+    })();
+  </script>
+</body>
+</html>

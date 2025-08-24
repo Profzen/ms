@@ -1,0 +1,13 @@
+{
+  "name": "medical-shop-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "http-server -c-1 . -p 3000",
+    "serve": "python -m http.server 3000"
+  },
+  "devDependencies": {
+    "http-server": "^14.0.0",
+    "supabase": "^2.34.3"
+  }
+}

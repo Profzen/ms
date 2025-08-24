@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>MedicalShop — Fournitures médicales</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="/public/favicon.ico">
+  <style>
+    /* =========================
+       MedicalShop - Index page
+       Palette: bleu / blanc / vert (nuances ajustées)
+       ========================= */
+    :root{
+      --bg: #f4f9ff;
+      --nav-bg: #0b355f;          /* légèrement plus foncé pour la nav */
+      --hero-bg: linear-gradient(180deg,#e6f2ff,#f8fbff); /* distincte du nav */
+      --panel-border: rgba(10,30,60,0.04);
+      --accent-blue: #1f6feb;
+      --accent-green: #1fb67a;    /* nuance vert pour bouton acheter */
+      --accent-green-2: #22c55e;  /* second stop */
+      --muted: #6b7b8f;
+      --card-bg: #ffffff;
+      --glass: rgba(31,111,235,0.06);
+      --radius:12px;
+      --shadow: 0 10px 30px rgba(9,30,66,0.06);
+      --text-dark: #04273f;
+      --footer-bg: #e8f5ff;       /* footer slightly darker than page bg */
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:Inter,system-ui,Roboto,Arial; background:var(--bg); color:var(--text-dark); -webkit-font-smoothing:antialiased; }
+    .container{ max-width:1200px; margin:0 auto; padding:18px; }
+
+    /* NAVBAR */
+    header.header{ background:var(--nav-bg); color:white; padding:10px 0; position:sticky; top:0; z-index:50; box-shadow:0 6px 18px rgba(2,6,23,0.08); }
+    .header-inner{ display:flex; gap:18px; align-items:center; max-width:1200px; margin:0 auto; padding:6px 18px; }
+    .logo { display:flex; gap:12px; align-items:center; font-weight:800; color:white }
+    .mark{ width:46px; height:46px; border-radius:10px; display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-blue),var(--accent-green)); color:white; font-weight:900 }
+    nav.nav{ display:flex; gap:12px; margin-left:18px; align-items:center }
+    nav.nav a{ color:rgba(255,255,255,0.9); text-decoration:none; padding:8px 10px; border-radius:8px; font-weight:600 }
+    nav.nav a:hover{ background:rgba(255,255,255,0.04) }
+
+    .search-box{ margin-left:auto; display:flex; gap:10px; align-items:center; }
+    .search-box input{ padding:10px 12px; border-radius:10px; border:0; width:320px; background:rgba(255,255,255,0.12); color:white; outline:none }
+    .search-box input::placeholder{ color:rgba(255,255,255,0.8) }
+
+    .cart-btn{ position:relative; background:linear-gradient(135deg,var(--accent-blue),var(--accent-green)); color:white; padding:8px 12px; border-radius:999px; display:flex; gap:8px; align-items:center; border:0; cursor:pointer; font-weight:700 }
+    .cart-badge{ position:absolute; top:-8px; right:-8px; background:#ff385c; color:white; font-weight:800; font-size:12px; padding:4px 7px; border-radius:999px; box-shadow:0 4px 8px rgba(0,0,0,0.12) }
+
+    /* HERO (distinct du nav et du contenu) */
+    .hero-band{ background:var(--hero-bg); padding:36px 0; border-bottom:1px solid var(--panel-border); }
+    .hero-inner{ display:flex; gap:24px; align-items:center; max-width:1200px; margin:0 auto; padding:0 18px; }
+    .kicker{ color:var(--accent-green); font-weight:800; margin-bottom:6px }
+    .hero-title{ margin:0; font-size:30px; color:var(--text-dark) }
+    .hero-sub{ margin-top:8px; color:var(--muted) }
+
+    .btn{ background:linear-gradient(135deg,var(--accent-blue),#3ea1ff); color:white; border:0; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700 }
+    .btn.ghost{ background:transparent; border:1px solid rgba(10,30,60,0.06); color:var(--text-dark) }
+
+    /* BUY button green gradient */
+    .btn-buy-cta { background: linear-gradient(135deg, var(--accent-green), var(--accent-green-2)); color: #02281a; border:0; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:800; box-shadow: 0 8px 20px rgba(34,197,94,0.12); }
+
+    /* PRODUCTS GRID */
+    .products-section{ padding:28px 0; max-width:1200px; margin:0 auto; }
+    .products-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+    @media (max-width:1100px){ .products-grid{ grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:800px){ .products-grid{ grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:520px){ .products-grid{ grid-template-columns:1fr; } }
+
+    .card{ background:var(--card-bg); border-radius:12px; padding:12px; box-shadow:var(--shadow); border:1px solid var(--panel-border); display:flex; flex-direction:column; gap:8px; min-height:240px }
+    .thumb{ width:100%; height:140px; border-radius:8px; overflow:hidden; background:#f3f7fb; display:grid; place-items:center }
+    .thumb img{ width:100%; height:100%; object-fit:cover }
+    .title-row{ display:flex; justify-content:space-between; align-items:center; gap:8px }
+    .price{ font-weight:800; color:var(--text-dark) }
+    .actions{ margin-top:auto; display:flex; gap:8px }
+
+    /* CART PANEL (floating) */
+    .cart-panel{ position:fixed; right:18px; bottom:18px; width:360px; max-width:calc(100% - 36px); background:white; border-radius:12px; box-shadow:0 20px 50px rgba(2,8,23,0.12); padding:12px; border:1px solid var(--panel-border); display:none; z-index:300; }
+    .cart-item{ display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid rgba(10,30,60,0.03) }
+    .cart-thumb{ width:56px; height:56px; border-radius:8px; overflow:hidden; background:#f3f7fb; display:grid; place-items:center }
+    .cart-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:10px }
+
+    /* BUY MODAL */
+    .modal-backdrop{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,0.5); z-index:400 }
+    .modal{ width:100%; max-width:760px; margin:16px; background:white; border-radius:12px; padding:18px; box-shadow:0 20px 60px rgba(2,8,23,0.2) }
+    .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
+    @media (max-width:700px){ .form-grid{ grid-template-columns:1fr } }
+
+    /* FOOTER (more contrasted/darker) */
+    footer.footer{ margin-top:40px; padding:28px 0; background:linear-gradient(180deg,#dfeffb,var(--footer-bg)); border-top:1px solid var(--panel-border) }
+    .footer-inner{ display:flex; gap:20px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap }
+
+    .muted{ color:var(--muted) }
+    .small{ font-size:13px; color:var(--muted) }
+
+    /* helper */
+    .center{ text-align:center }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <div class="logo">
+        <a href="/" style="color:white; text-decoration:none; display:flex; gap:10px; align-items:center;">
+          <div class="mark">M+</div>
+          <div style="line-height:1">
+            <div style="font-weight:800; color:white">MedicalShop</div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.9)">Approvisionnement médical</div>
+          </div>
+        </a>
+      </div>
+
+      <nav class="nav" aria-label="Navigation principale">
+        <a href="/">Accueil</a>
+        <a href="/products.html">Produits</a>
+        <a href="/about.html">À propos</a>
+        <a href="/contact.html">Contact</a>
+      </nav>
+
+      <div class="search-box" role="search" aria-label="Recherche produits">
+        <input id="searchInput" placeholder="Rechercher : gants, seringues..." aria-label="Recherche" />
+        <button id="cartBtn" class="cart-btn" title="Panier (0)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="display:block"><path d="M3 3h2l.4 2M7 13h10l3-8H6.4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="cartCount" style="font-weight:800">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero-band" aria-hidden="false">
+    <div class="hero-inner">
+      <div style="flex:1; padding:6px 18px;">
+        <div class="kicker">Fournitures médicales</div>
+        <h1 class="hero-title">Commande rapide pour établissements de santé</h1>
+        <p class="hero-sub">Catalogue professionnel, interface simple — ajoute au panier ou commande directement.</p>
+      </div>
+      <div style="width:320px; text-align:center; padding-right:18px;">
+        <img src="/public/nbbcl.png" alt="illustration" style="max-width:260px; max-height:160px; object-fit:contain;">
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <main class="products-section container" role="main" aria-labelledby="productsTitle">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+      <div>
+        <h2 id="productsTitle" style="font-size:20px; font-weight:800">Produits en vedette</h2>
+        <div class="small muted">Articles sélectionnés — ajoute au panier ou achète directement</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select id="categoryFilter" style="padding:10px 12px; border-radius:10px; border:1px solid rgba(10,30,60,0.06); background:white">
+          <option value="">Toutes catégories</option>
+        </select>
+        <button id="btnClearFilters" class="btn ghost">Réinitialiser</button>
+      </div>
+    </div>
+
+    <div id="productsGrid" class="products-grid" aria-live="polite">
+      <!-- Cards injected by JS -->
+    </div>
+  </main>
+
+  <!-- Cart panel (floating) -->
+  <div id="cartPanel" class="cart-panel" aria-hidden="true" role="dialog" aria-label="Panier">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+      <strong>Panier</strong>
+      <button id="btnCloseCart" class="btn ghost">Fermer</button>
+    </div>
+    <div id="cartList" style="max-height:340px; overflow:auto"></div>
+    <div class="cart-footer">
+      <div><strong>Total:</strong> <span id="cartTotal">0</span> XOF</div>
+      <div>
+        <button id="btnCheckout" class="btn-buy-cta">Commander</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buy modal -->
+  <div id="buyModal" class="modal-backdrop" aria-hidden="true" role="dialog" aria-label="Modal commande">
+    <div class="modal">
+      <h3 id="buyModalTitle">Finaliser la commande</h3>
+      <form id="buyForm">
+        <div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+          <div style="flex:1">
+            <div class="form-grid">
+              <div>
+                <label class="small">Nom complet</label>
+                <input id="buyerName" required style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(10,30,60,0.06)">
+              </div>
+              <div>
+                <label class="small">Téléphone</label>
+                <input id="buyerPhone" required style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(10,30,60,0.06)">
+              </div>
+              <div style="grid-column:1 / -1;">
+                <label class="small">Adresse de livraison</label>
+                <input id="buyerAddress" required style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(10,30,60,0.06)">
+              </div>
+            </div>
+
+            <div style="margin-top:12px; display:flex; gap:8px;">
+              <button id="submitOrder" class="btn-buy-cta" type="submit">Valider la commande</button>
+              <button id="cancelBuy" class="btn ghost" type="button">Annuler</button>
+            </div>
+            <div id="buyMsg" class="small muted" style="margin-top:8px"></div>
+          </div>
+
+          <div style="width:220px">
+            <div class="small muted">Récapitulatif</div>
+            <div id="buySummary" style="margin-top:10px; background:#fbfdff; padding:10px; border-radius:8px; border:1px solid rgba(10,30,60,0.03)"></div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div>
+        <div style="font-weight:800; color:var(--text-dark)">MedicalShop</div>
+        <div class="small muted">Approvisionnement médical — Togo & sous-région</div>
+      </div>
+      <div class="small muted">support@medicalshop.tg<br/>+228 90 00 00 00</div>
+    </div>
+  </footer>
+
+  <!-- SUPABASE + APP LOGIC -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    // ===== CONFIG - remplace si besoin =====
+    const SUPABASE_URL = "https://vrzmowqzegmaymewmbij.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyem1vd3F6ZWdtYXltZXdtYmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMDMwNzksImV4cCI6MjA3MDg3OTA3OX0.TmkdqXhkVgbfhAWVj-qLC9bDTL0-_YoGz-SgS81sNG0";
+    // =======================================
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // DOM refs
+    const productsGrid = document.getElementById('productsGrid');
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const btnClearFilters = document.getElementById('btnClearFilters');
+
+    const cartBtn = document.getElementById('cartBtn');
+    const cartCountEl = document.getElementById('cartCount');
+    const cartPanel = document.getElementById('cartPanel');
+    const btnCloseCart = document.getElementById('btnCloseCart');
+    const cartList = document.getElementById('cartList');
+    const cartTotalEl = document.getElementById('cartTotal');
+    const btnCheckout = document.getElementById('btnCheckout');
+
+    const buyModal = document.getElementById('buyModal');
+    const buyForm = document.getElementById('buyForm');
+    const buyerName = document.getElementById('buyerName');
+    const buyerPhone = document.getElementById('buyerPhone');
+    const buyerAddress = document.getElementById('buyerAddress');
+    const buySummary = document.getElementById('buySummary');
+    const buyMsg = document.getElementById('buyMsg');
+    const cancelBuy = document.getElementById('cancelBuy');
+
+    let PRODUCTS = [];
+    let CATEGORIES = [];
+    const CART_KEY = 'ms_cart_v1';
+
+    // Cart helpers
+    function loadCart(){ try { const raw = localStorage.getItem(CART_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ return []; } }
+    function saveCart(cart){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartBadge(); }
+    function updateCartBadge(){ const cart = loadCart(); const count = cart.reduce((s,i)=> s + (i.qty||0), 0); cartCountEl.textContent = String(count); cartBtn.title = `Panier (${count})`; }
+    function currencyFormat(n){ return Number(n||0).toLocaleString('fr-FR'); }
+
+    function addToCart(p, qty = 1){
+      const cart = loadCart();
+      const idx = cart.findIndex(i => i.productId === p.id);
+      if (idx >= 0) cart[idx].qty += qty;
+      else cart.push({ productId: p.id, qty, title: p.title, price: Number(p.price||0), image_url: p.image_url || p.image_path || '/public/nbbcl.png' });
+      saveCart(cart);
+      flashMessage(`Ajouté au panier : ${p.title}`);
+    }
+
+    function flashMessage(msg){
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style.position = 'fixed';
+      el.style.right = '18px';
+      el.style.bottom = '100px';
+      el.style.background = 'rgba(0,0,0,0.8)';
+      el.style.color = 'white';
+      el.style.padding = '10px 14px';
+      el.style.borderRadius = '10px';
+      el.style.zIndex = 600;
+      document.body.appendChild(el);
+      setTimeout(()=> el.style.opacity = '0.01', 1600);
+      setTimeout(()=> el.remove(), 2100);
+    }
+
+    // render products
+    function renderProducts(list){
+      productsGrid.innerHTML = '';
+      if (!list || list.length === 0) {
+        productsGrid.innerHTML = `<div style="grid-column:1/-1" class="small muted">Aucun produit</div>`;
+        return;
+      }
+      for (const p of list) {
+        const card = document.createElement('div'); card.className = 'card';
+        const imgUrl = p.image_url || p.image_path || '/public/nbbcl.png';
+        card.innerHTML = `
+          <div class="thumb"><img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy"></div>
+          <div class="title-row"><div style="min-width:0"><div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(p.title)}</div><div class="small muted" style="margin-top:6px">${escapeHtml(p.short_description || '')}</div></div><div class="price">${currencyFormat(p.price)} XOF</div></div>
+          <div class="small muted">Stock: ${p.stock ?? 0}</div>
+          <div class="actions">
+            <button class="btn btn-add">Ajouter au panier</button>
+            <button class="btn-buy-cta btn-buy">Acheter</button>
+          </div>
+        `;
+        card.querySelector('.btn-add').addEventListener('click', ()=> addToCart(p, 1));
+        card.querySelector('.btn-buy').addEventListener('click', ()=> openBuyModalWithProduct(p));
+        productsGrid.appendChild(card);
+      }
+    }
+
+    function renderCategories(options){
+      categoryFilter.innerHTML = '<option value="">Toutes catégories</option>';
+      for (const c of options) {
+        const o = document.createElement('option'); o.value = c.id; o.textContent = c.name; categoryFilter.appendChild(o);
+      }
+    }
+
+    function renderCartPanel(){
+      const cart = loadCart();
+      cartList.innerHTML = '';
+      if (cart.length === 0) {
+        cartList.innerHTML = '<div class="small muted">Panier vide</div>';
+        cartTotalEl.textContent = '0';
+        return;
+      }
+      let total = 0;
+      for (const item of cart) {
+        total += (item.price || 0) * (item.qty || 1);
+        const row = document.createElement('div'); row.className = 'cart-item';
+        row.innerHTML = `<div class="cart-thumb"><img src="${escapeHtml(item.image_url)}" style="width:100%;height:100%;object-fit:cover"></div>
+          <div style="flex:1">
+            <div style="font-weight:700">${escapeHtml(item.title)}</div>
+            <div class="small muted">${currencyFormat(item.price)} XOF × ${item.qty}</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button class="btn ghost small dec">-</button>
+            <button class="btn ghost small inc">+</button>
+            <button class="btn ghost small rem">✕</button>
+          </div>`;
+        row.querySelector('.dec').addEventListener('click', ()=> changeCartQty(item.productId, -1));
+        row.querySelector('.inc').addEventListener('click', ()=> changeCartQty(item.productId, +1));
+        row.querySelector('.rem').addEventListener('click', ()=> removeCartItem(item.productId));
+        cartList.appendChild(row);
+      }
+      cartTotalEl.textContent = currencyFormat(total);
+    }
+
+    function changeCartQty(productId, delta){
+      const cart = loadCart();
+      const idx = cart.findIndex(i => i.productId === productId);
+      if (idx < 0) return;
+      cart[idx].qty += delta;
+      if (cart[idx].qty <= 0) cart.splice(idx,1);
+      saveCart(cart);
+      renderCartPanel();
+    }
+
+    function removeCartItem(productId){
+      const cart = loadCart().filter(i => i.productId !== productId);
+      saveCart(cart);
+      renderCartPanel();
+    }
+
+    // buy modal
+    let BUY_CONTEXT = { items: [] };
+    function openBuyModalWithProduct(product){
+      BUY_CONTEXT = { items: [{ productId: product.id, qty: 1, title: product.title, price: Number(product.price||0), image_url: product.image_url || product.image_path || '/public/nbbcl.png' }], fromCart: false };
+      populateBuySummary();
+      showBuyModal(true);
+    }
+    function openBuyModalFromCart(){
+      const cart = loadCart();
+      if (!cart || cart.length === 0) { flashMessage('Le panier est vide'); return; }
+      BUY_CONTEXT = { items: cart.map(i=>({ ...i })), fromCart: true };
+      populateBuySummary();
+      showBuyModal(true);
+    }
+    function populateBuySummary(){
+      const items = BUY_CONTEXT.items || [];
+      const lines = items.map(it => `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><div>${escapeHtml(it.title)} ×${it.qty}</div><div>${currencyFormat((it.price||0)*it.qty)} XOF</div></div>`).join('');
+      const total = items.reduce((s,i)=> s + (i.price||0)*(i.qty||0), 0);
+      buySummary.innerHTML = `${lines}<hr style="border:none;border-top:1px solid rgba(10,30,60,0.06);margin:8px 0"><div style="display:flex;justify-content:space-between"><strong>Total</strong><strong>${currencyFormat(total)} XOF</strong></div>`;
+    }
+    function showBuyModal(show){
+      buyModal.style.display = show ? 'grid' : 'none';
+      buyModal.setAttribute('aria-hidden', show ? 'false' : 'true');
+      if (show) window.scrollTo({ top:0, behavior:'smooth' });
+    }
+
+    // util
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // load categories & products
+    async function loadCategories(){
+      try {
+        const { data, error } = await supabase.from('categories').select('id,name').eq('is_active', true).order('name',{ ascending:true });
+        if (error) { console.warn('categories err', error); return; }
+        CATEGORIES = data || [];
+        renderCategories(CATEGORIES);
+      } catch (err) { console.error(err); }
+    }
+
+    async function loadProducts(){
+      productsGrid.innerHTML = '<div style="grid-column:1/-1">Chargement…</div>';
+      try {
+        let qb = supabase.from('products').select('*').order('created_at',{ ascending:false }).limit(40);
+        const q = searchInput.value.trim();
+        if (q) qb = qb.ilike('title', `%${q}%`);
+        if (categoryFilter.value) qb = qb.eq('category_id', categoryFilter.value);
+        const { data, error } = await qb;
+        if (error) { console.warn('products fetch err', error); productsGrid.innerHTML = `<div style="grid-column:1/-1" class="small muted">Erreur chargement</div>`; return; }
+        PRODUCTS = data || [];
+        renderProducts(PRODUCTS);
+      } catch (err) {
+        console.error('loadProducts err', err);
+        productsGrid.innerHTML = `<div style="grid-column:1/-1" class="small muted">Erreur</div>`;
+      }
+    }
+
+    // order creation
+    function genOrderNumber(){
+      const now = new Date();
+      const dd = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+      const rand = Math.random().toString(36).substring(2,7).toUpperCase();
+      return `MS-${dd}-${rand}`;
+    }
+
+    async function submitOrder(evt){
+      evt && evt.preventDefault();
+      buyMsg.textContent = '';
+      const name = buyerName.value.trim();
+      const phone = buyerPhone.value.trim();
+      const address = buyerAddress.value.trim();
+      if (!name || !phone || !address) { buyMsg.textContent = 'Nom, téléphone et adresse requis'; return; }
+      const items = BUY_CONTEXT.items || [];
+      if (!items || items.length === 0) { buyMsg.textContent = 'Aucun article à commander'; return; }
+
+      try {
+        const total = items.reduce((s,i)=> s + (i.price||0)*(i.qty||0), 0);
+        const order_number = genOrderNumber();
+        const orderPayload = {
+          order_number,
+          order_name: name,
+          user_id: null,
+          status: 'pending',
+          payment_status: 'unpaid',
+          total_amount: total,
+          total: total,
+          currency: 'XOF',
+          shipping_address: address,
+          phone: phone
+        };
+
+        const { data: orderData, error: orderErr } = await supabase.from('orders').insert([orderPayload]).select().single();
+        if (orderErr || !orderData) {
+          console.error('order insert err', orderErr);
+          buyMsg.textContent = `Erreur création commande: ${orderErr?.message || 'voir console'}`;
+          return;
+        }
+
+        const orderId = orderData.id;
+        const itemsPayload = items.map(it => ({
+          order_id: orderId,
+          product_id: it.productId,
+          quantity: it.qty,
+          price_at_order: it.price,
+          status: 'pending',
+          phone: phone,
+          order_number: order_number,
+          order_name: name,
+          shipping_address: address
+        }));
+
+        const { data: itemsRes, error: itemsErr } = await supabase.from('order_items').insert(itemsPayload).select();
+        if (itemsErr) {
+          console.error('order_items insert err', itemsErr);
+          buyMsg.textContent = `Commande créée, mais impossible d'ajouter les items: ${itemsErr.message || 'voir console'}`;
+          return;
+        }
+
+        if (BUY_CONTEXT.fromCart) localStorage.removeItem(CART_KEY);
+        updateCartBadge();
+        renderCartPanel();
+        showBuyModal(false);
+        flashMessage('Commande créée — numéro: ' + order_number);
+      } catch (err) {
+        console.error('submitOrder err', err);
+        buyMsg.textContent = 'Erreur envoi commande (voir console)';
+      }
+    }
+
+    // events
+    searchInput.addEventListener('keydown', (e)=> { if (e.key === 'Enter') loadProducts(); });
+    categoryFilter.addEventListener('change', ()=> loadProducts());
+    btnClearFilters.addEventListener('click', ()=> { categoryFilter.value = ''; searchInput.value = ''; loadProducts(); });
+
+    cartBtn.addEventListener('click', ()=>{
+      const visible = cartPanel.style.display === 'block';
+      if (!visible) { renderCartPanel(); cartPanel.style.display = 'block'; }
+      else cartPanel.style.display = 'none';
+    });
+    btnCloseCart.addEventListener('click', ()=> cartPanel.style.display = 'none');
+    btnCheckout.addEventListener('click', ()=> openBuyModalFromCart());
+
+    cancelBuy.addEventListener('click', ()=> { showBuyModal(false); });
+    buyForm.addEventListener('submit', submitOrder);
+
+    // init
+    (async function init(){
+      updateCartBadge();
+      await loadCategories();
+      await loadProducts();
+    })();
+
+  </script>
+</body>
+</html>
